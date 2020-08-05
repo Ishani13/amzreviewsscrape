@@ -26,6 +26,7 @@ def read_asin_csv(fn):
         asin_reader = csv.reader(csvfile, delimiter=',')
         for row in asin_reader:
             asin_list.append(row[0])
+    print(asin_list)
     return asin_list
 
 
@@ -39,19 +40,22 @@ def read_reviews(driver, file):
 
     if len(asins) > 0:
         for asin in asins:
-            review_dict = {asin: {"ratings": [], "review-titles": [], "variations": [], "reviews": [], "review-links": [], }}
+            review_dict = {asin: {"ratings": [], "review-titles": [], "variations": [], "reviews": [],
+                                  "review-links": [], "helpful": []}}
 
             # get reviews page count
             url = base_url + asin
+            print(url)
             browser.get(url)
             source = browser.page_source
 
             soup = BS(source, 'html.parser')
             # soup = soup.encode("utf-8")
 
-            total_reviews = soup.find('span', {'data-hook': 'total-review-count'})
-            total_reviews = int(total_reviews.text.replace(",",""))
+            total_reviews = soup.find('span', {'data-hook': 'cr-filter-info-review-count'})
+            total_reviews = int(total_reviews.text.replace(",","").replace("Showing 1-10 of ","").replace(" reviews",""))
             page_count = int(math.ceil(total_reviews/10))
+
 
             # grab the title
             if soup.find('a', {'data-hook': 'product-link'}):
@@ -65,7 +69,7 @@ def read_reviews(driver, file):
 
             if page_count > 0:
                 print(f'Page count: {str(page_count)}')
-                for i in range(page_count):
+                for i in range(7):
                     page = i + 1
                     page = str(page)
                     print(f'Fetching page {page}')
@@ -109,16 +113,25 @@ def read_reviews(driver, file):
                             review_dict[asin]['variations'].append(v)
                     else:
                         review_dict[asin]['variations'] = []
+                    helpful = paged_soup.find_all('span', {'data-hook': 'helpful-vote-statement'})
+                    helpful = [helpfuller.text.replace(" people found this helpful", "").replace("One person found this helpful", "1").replace("", "0") for helpfuller in helpful]
+                    #for i in range(10 - len(helpful)):
+                     #   helpful.append('0')
+                    #helpful = [helpfuller.text.replace("One person found this helpful", "1") for helpfuller in helpful]
+                    #review_dict[asin]['helpful'] = helpful
+                    print(helpful)
+                    for helpless in helpful:
+                       review_dict[asin]['helpful'].append(helpless)
             data_tuples = []
             for rr in range(len(review_dict[asin]['reviews'])):
                 try:
-                    data_tuples.append((review_dict[asin]['ratings'][rr], review_dict[asin]['review-titles'][rr],
-                                        review_dict[asin]['variations'][rr], review_dict[asin]['reviews'][rr], 
-                                        review_dict[asin]['review-links'][rr]))
+                    data_tuples.append((review_dict[asin]['ratings'][rr], 'N/A',
+                                        review_dict[asin]['variations'][rr], review_dict[asin]['reviews'][rr],
+                                       'N/A', review_dict[asin]['helpful'][rr]))
                 except IndexError:
-                    data_tuples.append((review_dict[asin]['ratings'][rr], review_dict[asin]['review-titles'][rr],
-                                        'N/A', review_dict[asin]['reviews'][rr], 
-                                        review_dict[asin]['review-links'][rr]))
+                    data_tuples.append((review_dict[asin]['ratings'][rr], 'N/A',
+                                        'N/A', review_dict[asin]['reviews'][rr],
+                                        'N/A', review_dict[asin]['helpful'][rr]))
             products.append({"asin": asin, "title": product_title, "data": data_tuples})
 
         browser.close()
