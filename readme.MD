@@ -47,3 +47,7 @@ selenium web driver in the `driver_path` variable.
 
 [screenshot]: https://github.com/aflansburg/amzreviewsscrape/blob/master/scrape-output.png "CSV Output Screen Shot"
 
+In order to overcome the chromedriver problem on Mac,
+1. Copy the chromedriver file to /usr/local/bin/
+1. use the command "xattr -d com.apple.quarantine /usr/local/bin/chromedriver"
+

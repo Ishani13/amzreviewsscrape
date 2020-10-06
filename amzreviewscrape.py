@@ -23,7 +23,7 @@ elif os.name == 'nt':
 else:
     print('Unknown operating system!!!')
     exit()
-
+#driver_path="chromedriver"
 data = read_reviews(driver_path, inputFile)
 
 field_names = ['asin', 'product_title', 'rating', 'review_title', 'variation', 'review_text', 'review-links']
