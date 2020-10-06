@@ -58,7 +58,7 @@ def read_reviews(driver, file):
             posi = total_reviews.find('|')
             total_reviews = total_reviews[posi+1:]
             print(total_reviews)
-            page_count = int(math.ceil(total_reviews/10))
+            page_count = int(math.ceil(int(total_reviews)/10))
 
 
             # grab the title
